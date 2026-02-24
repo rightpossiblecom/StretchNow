@@ -1,0 +1,3 @@
+Title: StretchNow
+Short Description: A gentle reminder to move your body during the day.
+Full Description: StretchNow is a simple, easy-to-use application designed to help you build a healthy habit of stretching and moving throughout your busy day. Whether you work at a desk or are simply looking to be more active, StretchNow provides gentle nudges to take a short break and stretch. Stay healthy, stay active, and feel better with StretchNow!
