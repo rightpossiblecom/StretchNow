@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:device_preview/device_preview.dart';
 import 'package:stretchnow/core/theme/app_theme.dart';
 import 'package:stretchnow/core/constants/app_constants.dart';
 import 'package:stretchnow/core/services/storage_service.dart';
@@ -27,18 +29,25 @@ void main() async {
   await notificationService.init();
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => HomeViewModel(storageService)),
-        ChangeNotifierProvider(
-          create: (_) => ScheduleViewModel(storageService, notificationService),
-        ),
-        ChangeNotifierProvider(create: (_) => HistoryViewModel(storageService)),
-        ChangeNotifierProvider(
-          create: (_) => SettingsViewModel(storageService, notificationService),
-        ),
-      ],
-      child: const StretchNowApp(),
+    DevicePreview(
+      enabled: !kReleaseMode,
+      builder: (_) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => HomeViewModel(storageService)),
+          ChangeNotifierProvider(
+            create: (_) =>
+                ScheduleViewModel(storageService, notificationService),
+          ),
+          ChangeNotifierProvider(
+            create: (_) => HistoryViewModel(storageService),
+          ),
+          ChangeNotifierProvider(
+            create: (_) =>
+                SettingsViewModel(storageService, notificationService),
+          ),
+        ],
+        child: const StretchNowApp(),
+      ),
     ),
   );
 }
@@ -52,6 +61,9 @@ class StretchNowApp extends StatelessWidget {
       builder: (context, settingsViewModel, child) {
         return MaterialApp(
           title: 'StretchNow',
+          useInheritedMediaQuery: true,
+          locale: DevicePreview.locale(context),
+          builder: DevicePreview.appBuilder,
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: settingsViewModel.themeMode,

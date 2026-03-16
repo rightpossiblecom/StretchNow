@@ -1,18 +1,5 @@
-This is good — but this one needs careful positioning.
 
-“Helps reduce body stiffness” can sound like a health claim if phrased too strongly.
-
-For Play Store safety, we position it as:
-
-> “Gentle stretch reminders during the day.”
-
-Avoid medical framing (pain relief, injury prevention, posture correction, etc.).
-
-Now let’s structure it properly.
-
----
-
-# StretchNow – Simple App Plan
+# StretchNow – Simple App Plan https://stretch-now.vercel.app/privacy-policy
 
 ## 1️⃣ App Goal
 

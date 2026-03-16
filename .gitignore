@@ -44,5 +44,11 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
+# Android release signing secrets
+/android/key.properties
+/android/app/*.jks
+/docs/release/key.properties
+/docs/release/*.jks
+
 # Agent config
 .agent/
