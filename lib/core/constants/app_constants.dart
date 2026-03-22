@@ -11,6 +11,7 @@ class AppConstants {
   static const String keyActiveHoursStart = 'active_hours_start';
   static const String keyActiveHoursEnd = 'active_hours_end';
   static const String keyReminderFrequency = 'reminder_frequency_hours';
+  static const String keyDailyGoal = 'daily_goal';
 
   static const String keyNotificationsEnabled = 'notifications_enabled';
   static const String keyVibrationEnabled = 'vibration_enabled';

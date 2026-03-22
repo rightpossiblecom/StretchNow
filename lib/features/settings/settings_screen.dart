@@ -24,6 +24,56 @@ class SettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(24.0),
             children: [
               Text(
+                'Goals',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Daily Stretch Goal'),
+                          Text(
+                            '${viewModel.dailyGoal}',
+                            style: TextStyle(
+                              color: theme.colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Slider(
+                        value: viewModel.dailyGoal.toDouble(),
+                        min: 1,
+                        max: 12,
+                        divisions: 11,
+                        activeColor: theme.colorScheme.primary,
+                        onChanged: (val) => viewModel.setDailyGoal(val.toInt()),
+                      ),
+                      Text(
+                        'A goal of 4-6 stretches daily is recommended for consistency.',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              Text(
                 'Notifications',
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: theme.colorScheme.primary,
@@ -127,16 +177,6 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     const Divider(height: 1),
                     ListTile(
-                      leading: const Icon(Icons.description_outlined),
-                      title: const Text('Terms of Service'),
-                      onTap: () => _showPolicyDialog(
-                        context,
-                        'Terms of Service',
-                        'By using this utility app, you agree that it is designed only to encourage general movement, and is not a medical, fitness, or diagnostic tool.',
-                      ),
-                    ),
-                    const Divider(height: 1),
-                    ListTile(
                       leading: Icon(
                         Icons.delete_outline,
                         color: theme.colorScheme.error,
@@ -154,11 +194,22 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 32),
 
               Center(
-                child: Text(
-                  'Version 1.0.0',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
+                child: Column(
+                  children: [
+                    Text(
+                      'StretchNow',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.primary,
+                      ),
+                    ),
+                    Text(
+                      'Version 1.0.1',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 24),

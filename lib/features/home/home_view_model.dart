@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:stretchnow/core/constants/app_constants.dart';
@@ -10,7 +11,7 @@ class HomeViewModel extends ChangeNotifier {
     _initDailyData();
   }
 
-  final int _dailyGoal = 4; // Default goal
+  int _dailyGoal = 4;
   int get dailyGoal => _dailyGoal;
 
   int _dailyProgress = 0;
@@ -25,6 +26,14 @@ class HomeViewModel extends ChangeNotifier {
   bool _isQuickMode = false;
   bool get isQuickMode => _isQuickMode;
 
+  // Timer logic
+  Timer? _timer;
+  int _secondsRemaining = 60;
+  int get secondsRemaining => _secondsRemaining;
+  
+  bool _isTimerRunning = false;
+  bool get isTimerRunning => _isTimerRunning;
+
   final Random _random = Random();
 
   void _initDailyData() {
@@ -33,14 +42,21 @@ class HomeViewModel extends ChangeNotifier {
         _storageService.getString(AppConstants.keyLastStretchDate) ?? '';
 
     _currentStreak = _storageService.getInt(AppConstants.keyStreak);
+    
+    // Load daily goal from settings
+    _dailyGoal = _storageService.getSettingInt(AppConstants.keyDailyGoal, defaultValue: 4);
 
     // Check if streak is broken (more than 1 day difference)
     if (lastStretchDate.isNotEmpty) {
-      final lastDateObj = DateTime.parse(lastStretchDate);
-      final todayObj = DateTime.parse(today);
-      if (todayObj.difference(lastDateObj).inDays > 1) {
-        _currentStreak = 0;
-        _storageService.saveInt(AppConstants.keyStreak, 0);
+      try {
+        final lastDateObj = DateTime.parse(lastStretchDate);
+        final todayObj = DateTime.parse(today);
+        if (todayObj.difference(lastDateObj).inDays > 1) {
+          _currentStreak = 0;
+          _storageService.saveInt(AppConstants.keyStreak, 0);
+        }
+      } catch (e) {
+        // Handle potential parse error
       }
     }
 
@@ -60,10 +76,40 @@ class HomeViewModel extends ChangeNotifier {
   void _pickNextStretch() {
     final list = AppConstants.stretchSuggestions;
     _currentStretch = list[_random.nextInt(list.length)];
+    _resetTimer();
     notifyListeners();
   }
 
+  void _resetTimer() {
+    _stopTimer();
+    _secondsRemaining = 60;
+    _isTimerRunning = false;
+  }
+
+  void startTimer() {
+    if (_isTimerRunning) return;
+    
+    _isTimerRunning = true;
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_secondsRemaining > 0) {
+        _secondsRemaining--;
+        notifyListeners();
+      } else {
+        _stopTimer();
+        markStretchDone();
+      }
+    });
+    notifyListeners();
+  }
+
+  void _stopTimer() {
+    _timer?.cancel();
+    _timer = null;
+    _isTimerRunning = false;
+  }
+
   Future<void> markStretchDone() async {
+    _stopTimer();
     final today = _getTodayDateStr();
 
     if (!_isQuickMode && _dailyProgress < _dailyGoal) {
@@ -107,5 +153,11 @@ class HomeViewModel extends ChangeNotifier {
   void activateQuickMode() {
     _isQuickMode = true;
     _pickNextStretch();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 }

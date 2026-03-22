@@ -20,7 +20,14 @@ class SettingsViewModel extends ChangeNotifier {
   ThemeMode _themeMode = ThemeMode.system;
   ThemeMode get themeMode => _themeMode;
 
+  int _dailyGoal = 4;
+  int get dailyGoal => _dailyGoal;
+
   void _loadSettings() {
+    _dailyGoal = _storageService.getSettingInt(
+      AppConstants.keyDailyGoal,
+      defaultValue: 4,
+    );
     _notificationsEnabled = _storageService.getSettingBool(
       AppConstants.keyNotificationsEnabled,
       defaultValue: true,
@@ -116,6 +123,12 @@ class SettingsViewModel extends ChangeNotifier {
         ? 'light'
         : (mode == ThemeMode.dark ? 'dark' : 'system');
     await _storageService.saveSettingString(AppConstants.keyThemeMode, modeStr);
+    notifyListeners();
+  }
+
+  Future<void> setDailyGoal(int goal) async {
+    _dailyGoal = goal;
+    await _storageService.saveSettingInt(AppConstants.keyDailyGoal, goal);
     notifyListeners();
   }
 
