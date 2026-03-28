@@ -28,16 +28,44 @@ class HistoryViewModel extends ChangeNotifier {
   int _longestStreak = 0;
   int get longestStreak => _longestStreak;
 
+  int _totalStretches = 0;
+  int get totalStretches => _totalStretches;
+
   final List<HistoryEntry> _historyEntries = [];
   List<HistoryEntry> get historyEntries => _historyEntries;
 
+  List<HistoryEntry> get lastSevenDays {
+    final now = DateTime.now();
+    final entries = <HistoryEntry>[];
+    final goal = _storageService.getSettingInt(
+      AppConstants.keyDailyGoal,
+      defaultValue: 4,
+    );
+
+    for (int i = 6; i >= 0; i--) {
+      final date = now.subtract(Duration(days: i));
+      final dateStr =
+          '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      final progress = _storageService.getInt(
+        '${AppConstants.keyDailyProgress}$dateStr',
+      );
+      entries.add(HistoryEntry(date: dateStr, completed: progress, goal: goal));
+    }
+    return entries;
+  }
+
   void loadHistoryData() {
+    final goal = _storageService.getSettingInt(
+      AppConstants.keyDailyGoal,
+      defaultValue: 4,
+    );
+
     _currentStreak = _storageService.getInt(AppConstants.keyStreak);
     _longestStreak = _storageService.getInt(AppConstants.keyLongestStreak);
 
     _historyEntries.clear();
+    _totalStretches = 0;
 
-    // Check last 30 days
     final now = DateTime.now();
     for (int i = 0; i < 30; i++) {
       final date = now.subtract(Duration(days: i));
@@ -47,14 +75,11 @@ class HistoryViewModel extends ChangeNotifier {
       final progress = _storageService.getInt(
         '${AppConstants.keyDailyProgress}$dateStr',
       );
+      _totalStretches += progress;
+
       if (progress > 0 || i == 0) {
-        // Always show today, or past days if progress > 0
         _historyEntries.add(
-          HistoryEntry(
-            date: dateStr,
-            completed: progress,
-            goal: 4, // Default goal based on requirements.
-          ),
+          HistoryEntry(date: dateStr, completed: progress, goal: goal),
         );
       }
     }
@@ -83,6 +108,15 @@ class HistoryViewModel extends ChangeNotifier {
       return DateFormat('MMM d, yyyy').format(date);
     } catch (_) {
       return dateStr;
+    }
+  }
+
+  String formatShortDay(String dateStr) {
+    try {
+      final date = DateTime.parse(dateStr);
+      return DateFormat('E').format(date).substring(0, 2);
+    } catch (_) {
+      return '?';
     }
   }
 }

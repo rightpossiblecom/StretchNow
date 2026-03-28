@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:stretchnow/core/constants/app_constants.dart';
+import 'package:stretchnow/core/models/stretch_model.dart';
 import 'package:stretchnow/core/services/storage_service.dart';
 
 class HomeViewModel extends ChangeNotifier {
@@ -20,21 +21,37 @@ class HomeViewModel extends ChangeNotifier {
   int _currentStreak = 0;
   int get currentStreak => _currentStreak;
 
-  String _currentStretch = '';
-  String get currentStretch => _currentStretch;
+  StretchExercise? _currentStretch;
+  StretchExercise? get currentStretch => _currentStretch;
 
   bool _isQuickMode = false;
   bool get isQuickMode => _isQuickMode;
 
-  // Timer logic
   Timer? _timer;
   int _secondsRemaining = 60;
   int get secondsRemaining => _secondsRemaining;
-  
+
+  int _totalDuration = 60;
+  int get totalDuration => _totalDuration;
+
   bool _isTimerRunning = false;
   bool get isTimerRunning => _isTimerRunning;
 
   final Random _random = Random();
+
+  String get greeting {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+
+  String get progressMessage {
+    if (_dailyProgress == 0) return 'Ready to stretch?';
+    if (_dailyProgress >= _dailyGoal) return 'Daily goal reached!';
+    if (_dailyProgress >= _dailyGoal - 1) return 'Almost there!';
+    return 'Keep it up!';
+  }
 
   void _initDailyData() {
     final today = _getTodayDateStr();
@@ -42,11 +59,11 @@ class HomeViewModel extends ChangeNotifier {
         _storageService.getString(AppConstants.keyLastStretchDate) ?? '';
 
     _currentStreak = _storageService.getInt(AppConstants.keyStreak);
-    
-    // Load daily goal from settings
-    _dailyGoal = _storageService.getSettingInt(AppConstants.keyDailyGoal, defaultValue: 4);
+    _dailyGoal = _storageService.getSettingInt(
+      AppConstants.keyDailyGoal,
+      defaultValue: 4,
+    );
 
-    // Check if streak is broken (more than 1 day difference)
     if (lastStretchDate.isNotEmpty) {
       try {
         final lastDateObj = DateTime.parse(lastStretchDate);
@@ -60,7 +77,6 @@ class HomeViewModel extends ChangeNotifier {
       }
     }
 
-    // Load today's progress
     _dailyProgress = _storageService.getInt(
       '${AppConstants.keyDailyProgress}$today',
     );
@@ -73,22 +89,40 @@ class HomeViewModel extends ChangeNotifier {
     return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
   }
 
+  List<StretchExercise> _getFavorites() {
+    final stored =
+        _storageService.getString(AppConstants.keyFavoriteStretches) ?? '';
+    if (stored.isEmpty) return [];
+    final ids = stored.split(',');
+    return StretchExercise.catalog
+        .where((s) => ids.contains(s.id))
+        .toList();
+  }
+
   void _pickNextStretch() {
-    final list = AppConstants.stretchSuggestions;
-    _currentStretch = list[_random.nextInt(list.length)];
-    _resetTimer();
+    _stopTimer();
+    final favorites = _getFavorites();
+    final pool =
+        favorites.isNotEmpty ? favorites : StretchExercise.catalog;
+    _currentStretch = pool[_random.nextInt(pool.length)];
+    _totalDuration = _currentStretch!.durationSeconds;
+    _secondsRemaining = _totalDuration;
+    _isTimerRunning = false;
     notifyListeners();
   }
 
-  void _resetTimer() {
+  void setStretch(StretchExercise stretch) {
     _stopTimer();
-    _secondsRemaining = 60;
+    _currentStretch = stretch;
+    _totalDuration = stretch.durationSeconds;
+    _secondsRemaining = _totalDuration;
     _isTimerRunning = false;
+    notifyListeners();
   }
 
   void startTimer() {
     if (_isTimerRunning) return;
-    
+
     _isTimerRunning = true;
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_secondsRemaining > 0) {
@@ -120,7 +154,6 @@ class HomeViewModel extends ChangeNotifier {
       );
     }
 
-    // Update streak if it's the first stretch of the day
     final lastStretchDate =
         _storageService.getString(AppConstants.keyLastStretchDate) ?? '';
     if (lastStretchDate != today) {
@@ -139,8 +172,6 @@ class HomeViewModel extends ChangeNotifier {
     }
 
     await _storageService.saveString(AppConstants.keyLastStretchDate, today);
-
-    // Reset quick mode after done
     _isQuickMode = false;
     _pickNextStretch();
   }

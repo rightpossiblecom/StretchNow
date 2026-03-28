@@ -9,6 +9,7 @@ import 'package:stretchnow/core/services/storage_service.dart';
 import 'package:stretchnow/core/services/notification_service.dart';
 
 import 'package:stretchnow/features/home/home_view_model.dart';
+import 'package:stretchnow/features/stretches/stretches_view_model.dart';
 import 'package:stretchnow/features/schedule/schedule_view_model.dart';
 import 'package:stretchnow/features/history/history_view_model.dart';
 import 'package:stretchnow/features/settings/settings_view_model.dart';
@@ -17,14 +18,12 @@ import 'package:stretchnow/features/main/main_navigation.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Storage
   await Hive.initFlutter();
   await Hive.openBox<String>(AppConstants.appDataBox);
   await Hive.openBox<String>(AppConstants.settingsBox);
 
   final storageService = StorageService();
 
-  // Notifications
   final notificationService = NotificationService();
   await notificationService.init();
 
@@ -34,6 +33,9 @@ void main() async {
       builder: (_) => MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => HomeViewModel(storageService)),
+          ChangeNotifierProvider(
+            create: (_) => StretchesViewModel(storageService),
+          ),
           ChangeNotifierProvider(
             create: (_) =>
                 ScheduleViewModel(storageService, notificationService),
@@ -61,7 +63,6 @@ class StretchNowApp extends StatelessWidget {
       builder: (context, settingsViewModel, child) {
         return MaterialApp(
           title: 'StretchNow',
-          useInheritedMediaQuery: true,
           locale: DevicePreview.locale(context),
           builder: DevicePreview.appBuilder,
           theme: AppTheme.lightTheme,

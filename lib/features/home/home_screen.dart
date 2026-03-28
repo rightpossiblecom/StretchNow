@@ -17,185 +17,238 @@ class HomeScreen extends StatelessWidget {
       body: Consumer<HomeViewModel>(
         builder: (context, viewModel, child) {
           final todayStr = DateFormat('EEEE, MMM d').format(DateTime.now());
-          final progressPercent = (viewModel.dailyProgress / viewModel.dailyGoal).clamp(0.0, 1.0);
+          final progressPercent =
+              (viewModel.dailyProgress / viewModel.dailyGoal).clamp(0.0, 1.0);
+          final stretch = viewModel.currentStretch;
 
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  colorScheme.surface,
-                  colorScheme.primary.withOpacity(0.05),
-                ],
-              ),
-            ),
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // Header
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'StretchNow',
-                              style: GoogleFonts.outfit(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: colorScheme.onSurface,
-                              ),
+          return SafeArea(
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            viewModel.greeting,
+                            style: GoogleFonts.outfit(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: colorScheme.onSurface,
                             ),
-                            Text(
-                              todayStr,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            todayStr,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                      _StreakBadge(streak: viewModel.currentStreak),
+                    ],
+                  ),
+
+                  const SizedBox(height: 28),
+
+                  // Progress card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: colorScheme.surfaceContainerHighest
+                          .withOpacity(0.45),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: colorScheme.outlineVariant.withOpacity(0.4),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Daily Goal',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  viewModel.progressMessage,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: progressPercent >= 1.0
+                                    ? const Color(0xFF22C55E).withOpacity(0.15)
+                                    : colorScheme.primary.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(100),
+                              ),
+                              child: Text(
+                                '${viewModel.dailyProgress} / ${viewModel.dailyGoal}',
+                                style: TextStyle(
+                                  color: progressPercent >= 1.0
+                                      ? const Color(0xFF22C55E)
+                                      : colorScheme.primary,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
                               ),
                             ),
                           ],
                         ),
-                        _StreakBadge(streak: viewModel.currentStreak),
+                        const SizedBox(height: 14),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: LinearProgressIndicator(
+                            value: progressPercent,
+                            minHeight: 8,
+                            backgroundColor:
+                                colorScheme.surfaceContainerHighest,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              progressPercent >= 1.0
+                                  ? const Color(0xFF22C55E)
+                                  : colorScheme.primary,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
-                    
-                    const SizedBox(height: 32),
+                  ),
 
-                    // Progress Overview
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: colorScheme.surfaceContainerHighest.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(24),
-                        border: Border.all(color: colorScheme.outlineVariant.withOpacity(0.5)),
-                      ),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Daily Goal',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              Text(
-                                '${viewModel.dailyProgress} / ${viewModel.dailyGoal}',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: colorScheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: LinearProgressIndicator(
-                              value: progressPercent,
-                              minHeight: 10,
-                              backgroundColor: colorScheme.surface,
-                              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  const Spacer(),
 
-                    const Spacer(),
-
-                    // Stretch Card
+                  // Stretch card
+                  if (stretch != null)
                     AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 500),
+                      duration: const Duration(milliseconds: 400),
                       child: _StretchCard(
-                        key: ValueKey('${viewModel.currentStretch}_${viewModel.isQuickMode}'),
+                        key: ValueKey(
+                            '${stretch.id}_${viewModel.isQuickMode}'),
                         viewModel: viewModel,
+                        stretch: stretch,
                       ),
                     ),
 
-                    const Spacer(),
+                  const Spacer(),
 
-                    // Action Area
-                    if (!viewModel.isTimerRunning)
-                      Column(
-                        children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: viewModel.skipStretch,
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 18),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  // Action buttons
+                  if (!viewModel.isTimerRunning)
+                    Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: viewModel.skipStretch,
+                                style: OutlinedButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
                                   ),
-                                  child: const Text('Skip'),
+                                  side: BorderSide(
+                                    color: colorScheme.outlineVariant,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                flex: 2,
-                                child: FilledButton(
-                                  onPressed: viewModel.startTimer,
-                                  style: FilledButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(vertical: 18),
-                                    backgroundColor: colorScheme.primary,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                    elevation: 4,
-                                    shadowColor: colorScheme.primary.withOpacity(0.4),
-                                  ),
-                                  child: const Text(
-                                    'Start 60s Stretch',
-                                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                child: Text(
+                                  'Skip',
+                                  style: TextStyle(
+                                    color: colorScheme.onSurfaceVariant,
                                   ),
                                 ),
                               ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-                          if (!viewModel.isQuickMode)
-                            TextButton.icon(
-                              onPressed: viewModel.activateQuickMode,
-                              icon: const Icon(Icons.flash_on, size: 18),
-                              label: const Text('Too busy? Try Quick Mode'),
-                              style: TextButton.styleFrom(
-                                foregroundColor: colorScheme.secondary,
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              flex: 2,
+                              child: FilledButton(
+                                onPressed: viewModel.startTimer,
+                                style: FilledButton.styleFrom(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  backgroundColor: colorScheme.primary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Start ${stretch?.durationSeconds ?? 60}s Stretch',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
                               ),
                             ),
-                        ],
-                      )
-                    else
-                      Column(
-                        children: [
-                          Text(
-                            'Keep Stretching!',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.bold,
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        if (!viewModel.isQuickMode)
+                          TextButton.icon(
+                            onPressed: viewModel.activateQuickMode,
+                            icon: Icon(
+                              Icons.bolt_outlined,
+                              size: 18,
+                              color: colorScheme.secondary,
+                            ),
+                            label: Text(
+                              'Quick Mode',
+                              style: TextStyle(color: colorScheme.secondary),
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton(
-                              onPressed: viewModel.markStretchDone,
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 18),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ],
+                    )
+                  else
+                    Column(
+                      children: [
+                        Text(
+                          'Keep stretching...',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            color: colorScheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton(
+                            onPressed: viewModel.markStretchDone,
+                            style: OutlinedButton.styleFrom(
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
                               ),
-                              child: const Text('Stop Early'),
+                              side: BorderSide(
+                                color: colorScheme.outlineVariant,
+                              ),
                             ),
+                            child: const Text('Done Early'),
                           ),
-                        ],
-                      ),
-                    
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                        ),
+                      ],
+                    ),
+
+                  const SizedBox(height: 20),
+                ],
               ),
             ),
           );
@@ -207,21 +260,24 @@ class HomeScreen extends StatelessWidget {
 
 class _StreakBadge extends StatelessWidget {
   final int streak;
-
   const _StreakBadge({required this.streak});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+    final isActive = streak > 0;
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: streak > 0 ? Colors.orange.shade50 : colorScheme.surfaceContainerHighest,
+        color: isActive
+            ? const Color(0xFFFFF7ED)
+            : colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(100),
         border: Border.all(
-          color: streak > 0 ? Colors.orange.shade200 : colorScheme.outlineVariant,
-          width: 1,
+          color: isActive
+              ? const Color(0xFFFED7AA)
+              : colorScheme.outlineVariant,
         ),
       ),
       child: Row(
@@ -229,16 +285,20 @@ class _StreakBadge extends StatelessWidget {
         children: [
           Icon(
             Icons.local_fire_department_rounded,
-            color: streak > 0 ? Colors.orange.shade600 : colorScheme.outline,
-            size: 20,
+            color: isActive
+                ? const Color(0xFFEA580C)
+                : colorScheme.outline,
+            size: 18,
           ),
           const SizedBox(width: 4),
           Text(
             '$streak',
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: streak > 0 ? Colors.orange.shade900 : colorScheme.outline,
-              fontSize: 16,
+              color: isActive
+                  ? const Color(0xFF9A3412)
+                  : colorScheme.outline,
+              fontSize: 15,
             ),
           ),
         ],
@@ -249,111 +309,138 @@ class _StreakBadge extends StatelessWidget {
 
 class _StretchCard extends StatelessWidget {
   final HomeViewModel viewModel;
+  final dynamic stretch;
 
-  const _StretchCard({super.key, required this.viewModel});
+  const _StretchCard({
+    super.key,
+    required this.viewModel,
+    required this.stretch,
+  });
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
+    final containerColor = viewModel.isQuickMode
+        ? colorScheme.secondaryContainer
+        : colorScheme.primaryContainer;
+    final onContainerColor = viewModel.isQuickMode
+        ? colorScheme.onSecondaryContainer
+        : colorScheme.onPrimaryContainer;
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: viewModel.isQuickMode 
-            ? colorScheme.secondaryContainer.withOpacity(0.9)
-            : colorScheme.primaryContainer.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(32),
-        boxShadow: [
-          BoxShadow(
-            color: (viewModel.isQuickMode ? colorScheme.secondary : colorScheme.primary)
-                .withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: containerColor,
+        borderRadius: BorderRadius.circular(28),
       ),
       child: Column(
         children: [
           if (viewModel.isQuickMode)
             Container(
-              margin: const EdgeInsets.only(bottom: 16),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              margin: const EdgeInsets.only(bottom: 14),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
               decoration: BoxDecoration(
-                color: colorScheme.onSecondaryContainer.withOpacity(0.1),
+                color: onContainerColor.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(100),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.timer_outlined, size: 16, color: colorScheme.onSecondaryContainer),
-                  const SizedBox(width: 6),
+                  Icon(Icons.bolt_outlined,
+                      size: 14, color: onContainerColor),
+                  const SizedBox(width: 4),
                   Text(
                     'QUICK MODE',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
-                      color: colorScheme.onSecondaryContainer,
+                      color: onContainerColor,
                     ),
                   ),
                 ],
               ),
             ),
-          
-          Text(
-            'SUGGESTED STRETCH',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: viewModel.isQuickMode
-                  ? colorScheme.onSecondaryContainer.withOpacity(0.6)
-                  : colorScheme.onPrimaryContainer.withOpacity(0.6),
-              letterSpacing: 2.0,
-              fontWeight: FontWeight.bold,
+
+          // Body part badge
+          Container(
+            padding:
+                const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+            decoration: BoxDecoration(
+              color: onContainerColor.withOpacity(0.08),
+              borderRadius: BorderRadius.circular(100),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(stretch.bodyPart.icon,
+                    size: 14, color: onContainerColor.withOpacity(0.7)),
+                const SizedBox(width: 6),
+                Text(
+                  stretch.bodyPart.label,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: onContainerColor.withOpacity(0.7),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
+
+          const SizedBox(height: 16),
+
           Text(
-            viewModel.currentStretch,
+            stretch.name,
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
-              fontSize: 36,
+              fontSize: 32,
               fontWeight: FontWeight.bold,
-              color: viewModel.isQuickMode
-                  ? colorScheme.onSecondaryContainer
-                  : colorScheme.onPrimaryContainer,
+              color: onContainerColor,
             ),
           ),
-          const SizedBox(height: 40),
-          
-          // Timer Widget
+
+          const SizedBox(height: 8),
+
+          Text(
+            stretch.description,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: onContainerColor.withOpacity(0.6),
+              height: 1.4,
+            ),
+          ),
+
+          const SizedBox(height: 28),
+
+          // Timer ring
           Stack(
             alignment: Alignment.center,
             children: [
               SizedBox(
-                width: 100,
-                height: 100,
+                width: 90,
+                height: 90,
                 child: CircularProgressIndicator(
-                  value: viewModel.secondsRemaining / 60,
-                  strokeWidth: 8,
-                  backgroundColor: (viewModel.isQuickMode 
-                    ? colorScheme.onSecondaryContainer 
-                    : colorScheme.onPrimaryContainer).withOpacity(0.12),
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    viewModel.isQuickMode 
-                      ? colorScheme.onSecondaryContainer 
-                      : colorScheme.onPrimaryContainer
-                  ),
+                  value: viewModel.secondsRemaining / viewModel.totalDuration,
+                  strokeWidth: 6,
+                  strokeCap: StrokeCap.round,
+                  backgroundColor: onContainerColor.withOpacity(0.1),
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(onContainerColor),
                 ),
               ),
               Text(
                 '${viewModel.secondsRemaining}s',
                 style: GoogleFonts.jetBrainsMono(
-                  fontSize: 24,
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
-                  color: viewModel.isQuickMode
-                      ? colorScheme.onSecondaryContainer
-                      : colorScheme.onPrimaryContainer,
+                  color: onContainerColor,
                 ),
               ),
             ],
